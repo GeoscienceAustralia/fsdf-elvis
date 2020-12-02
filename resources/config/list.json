@@ -74,5 +74,11 @@
       "image": "icsm/resources/img/DAWE-stacked-black.png",
       "height": 42,
       "showText": false
+   },
+   "VIC Government": {
+      "code": "vic",
+      "image": "icsm/resources/img/Victoria-State-Gov-DELWP-right-pms-2945-rgb.png",
+      "height": 34,
+      "showText": false
    }
 }
