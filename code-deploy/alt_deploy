@@ -1,25 +1,22 @@
 #!/bin/bash
-# Usage: copy this file to the instance and run it once, e.g. /bin/bash alt_deployment
+# Usage: copy this file to the instance and run it once, e.g. /bin/bash alt_deploy
 
 PROJECT_DIR=/home/ec2-user/fsdf-elvis
 APACHE_CONFIG_DIR=/home/ec2-user/apache-configuration
-HTTP_CONFIG_DIRECTORY=/etc/httpd/conf.d
+HTTP_CONFIG_DIR=/etc/httpd/conf.d
 
 PROXY_FILE_NAME=proxies.conf
 PROXY_SOURCE=$APACHE_CONFIG_DIR/config/$PROXY_FILE_NAME
-PROXY_CONFIG_TARGET=$HTTP_CONFIG_DIRECTORY/$PROXY_FILE_NAME
 
-FSDF_SERVER_FILE_NAME=fsdf
 FSDF_SERVICE_NAME=fsdf
-FSDF_SERVICE_TARGET=/etc/init.d/$FSDF_SERVICE_NAME
 FSDF_SERVICE_SOURCE=$PROJECT_DIR/code-deploy/fsdf
+FSDF_SERVICE_TARGET=/etc/init.d/fsdf
 
 ELEVATION_CONFIG_FILE_NAME=elevation.conf
 ELEVATION_CONFIG_SOURCE=$APACHE_CONFIG_DIR/config/$ELEVATION_CONFIG_FILE_NAME
-ELEVATION_CONFIG_TARGET=$HTTP_CONFIG_DIRECTORY/$ELEVATION_CONFIG_FILE_NAME
 
-LOGROTATE_SOURCE_DIRECTORY=/home/ec2-user/apache-configuration/config/logrotate/
-LOGROTATE_TARGET_DIRECTORY=/etc/logrotate.d
+LOGROTATE_SOURCE_DIR=/home/ec2-user/apache-configuration/config/logrotate
+LOGROTATE_TARGET_DIR=/etc/logrotate.d
 
 cd /home/ec2-user
 sudo yum update -y
@@ -41,20 +38,20 @@ npm install
 bower install
 
 # Sets up Apache HTTP service
-sudo cp "$PROXY_SOURCE" "$HTTP_CONFIG_DIRECTORY"
-sudo cp "$ELEVATION_CONFIG_SOURCE" "$HTTP_CONFIG_DIRECTORY"
+sudo cp "$PROXY_SOURCE" "$HTTP_CONFIG_DIR"
+sudo cp "$ELEVATION_CONFIG_SOURCE" "$HTTP_CONFIG_DIR"
 
 # Sets up logging
-sudo cp -f "$LOGROTATE_SOURCE_DIRECTORY"* "$LOGROTATE_TARGET_DIRECTORY"
+sudo cp -f "$LOGROTATE_SOURCE_DIR"/* "$LOGROTATE_TARGET_DIR"
 
 # Creates a SYSV service and autostarts it
-sudo cp $FSDF_SERVICE_SOURCE /etc/init.d
-sudo chmod +x /etc/init.d/$FSDF_SERVICE_NAME
-sudo service fsdf start
-sudo chkconfig fsdf on
+sudo cp "$FSDF_SERVICE_SOURCE" /etc/init.d
+sudo chmod +x $FSDF_SERVICE_TARGET
+sudo service $FSDF_SERVICE_NAME start
+sudo chkconfig $FSDF_SERVICE_NAME on
 
 # To make sure in the right directory
-cd /home/ec2-user/fsdf-elvis
+cd $PROJECT_DIR
 bower update
 
 # Copy static content to Apache
