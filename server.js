@@ -108,13 +108,27 @@ app.use(function (req, res, next) {
         //console.log("initiate job: " + JSON.stringify(data, null, 3));
 
         recaptcha.verify(req.connection.remoteAddress, data.parameters.recaptcha, function (error, response, body) {
-            if (!error) {
-                delete data.parameters.recaptcha;
-                serviceBroker.execute(data).then(message => {
-                    res.status(200).send(message);
+            if (error) {
+                // There was an error trying to call the verification service.
+                res.status(500).send({
+                    status: 'error',
+                    message: 'Failed to connect to the reCAPTCHA user verification server.'
                 });
             } else {
-                res.status(403).send(body);
+                const bodyObj = JSON.parse(body);
+                if (!bodyObj.success) {
+                    // Verification failed. Invalid recaptcha token.
+                    res.status(403).send({
+                        status: 'error',
+                        message: 'reCAPTCHA user verification failed: ' + recaptcha.getErrorMessage(bodyObj['error-codes'])
+                    });
+                } else {
+                    // Request validated.
+                    delete data.parameters.recaptcha;
+                    serviceBroker.execute(data).then(message => {
+                        res.status(200).send(message);
+                    });
+                }
             }
         });
     });
